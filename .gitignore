@@ -16,4 +16,4 @@
 
 /tmp/*
 
-.env
+app.env
