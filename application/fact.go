@@ -6,8 +6,8 @@ import (
 	"fiber-base-go/infrastructure/persistence"
 )
 
-// GetAllFacts return all domain.news
-func GetAllFacts() ([]domain.Fact, error) {
+// GetAllStudents return all domain.news
+func GetAllStudents() ([]domain.Student, error) {
 	conn, err := config.ConnectDb()
 	if err != nil {
 		return nil, err
@@ -20,8 +20,8 @@ func GetAllFacts() ([]domain.Fact, error) {
 	return repo.GetAll()
 }
 
-// AddFact saves new Fact
-func AddFact(p domain.Fact) error {
+// AddStudent saves new Student
+func AddStudent(p domain.Student) error {
 	conn, err := config.ConnectDb()
 	if err != nil {
 		return err

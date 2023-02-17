@@ -20,15 +20,15 @@ func Run(port int) {
 
 // Routes returns the initialized router
 func SetupRoutes(app *fiber.App) {
-	app.Get("/", ListFacts)
+	app.Get("/", ListStudents)
 
-	app.Post("/fact", CreateFact)
+	app.Post("/fact", CreateStudent)
 
 	app.Get("/migrate", Migrate)
 }
 
-func ListFacts(c *fiber.Ctx) error {
-	facts, err := application.GetAllFacts()
+func ListStudents(c *fiber.Ctx) error {
+	facts, err := application.GetAllStudents()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": err.Error(),
@@ -38,15 +38,15 @@ func ListFacts(c *fiber.Ctx) error {
 	return c.Status(200).JSON(facts)
 }
 
-func CreateFact(c *fiber.Ctx) error {
-	var fact domain.Fact
+func CreateStudent(c *fiber.Ctx) error {
+	var fact domain.Student
 	if err := c.BodyParser(fact); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": err.Error(),
 		})
 	}
 
-	err := application.AddFact(fact)
+	err := application.AddStudent(fact)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": err.Error(),
