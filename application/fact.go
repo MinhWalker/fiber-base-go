@@ -1,17 +1,13 @@
 package application
 
 import (
-	"fiber-base-go/config"
 	"fiber-base-go/domain"
 	"fiber-base-go/infrastructure/persistence"
+	"gorm.io/gorm"
 )
 
 // GetAllStudents return all domain.news
-func GetAllStudents() ([]domain.Student, error) {
-	conn, err := config.ConnectDb()
-	if err != nil {
-		return nil, err
-	}
+func GetAllStudents(conn *gorm.DB) ([]domain.Student, error) {
 	sqlDB, _ := conn.DB()
 	defer sqlDB.Close()
 
@@ -21,11 +17,7 @@ func GetAllStudents() ([]domain.Student, error) {
 }
 
 // AddStudent saves new Student
-func AddStudent(p domain.Student) error {
-	conn, err := config.ConnectDb()
-	if err != nil {
-		return err
-	}
+func AddStudent(conn *gorm.DB, p domain.Student) error {
 	sqlDB, _ := conn.DB()
 	defer sqlDB.Close()
 

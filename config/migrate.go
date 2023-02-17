@@ -7,17 +7,12 @@ import (
 	"gorm.io/gorm"
 )
 
-func DBMigrate() (*gorm.DB, error) {
-	conn, err := ConnectDb()
-	if err != nil {
-		return nil, err
-	}
-
+func DBMigrate(conn *gorm.DB) error {
 	sqlDB, _ := conn.DB()
 	defer sqlDB.Close()
 
 	conn.AutoMigrate(&domain.Student{})
 	log.Println("Migration has been processed")
 
-	return conn, nil
+	return nil
 }
