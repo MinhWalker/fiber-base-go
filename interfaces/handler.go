@@ -1,24 +1,31 @@
 package interfaces
 
 import (
-	"fiber-base-go/application"
+	"bufio"
+	"encoding/csv"
 	"fiber-base-go/config"
 	"fiber-base-go/domain"
+	"fiber-base-go/infrastructure/persistence"
+	"fiber-base-go/services"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
+	"io"
 	"log"
-	"strconv"
+	"net/http"
+	"time"
 )
 
 type StudentHandler struct {
-	DB *gorm.DB
+	services services.StudentService
 }
 
 // Run start server
 func Run(port int) {
 	app := fiber.New()
 	conn, _ := config.ConnectDb()
+
+	Migrate(conn)
 
 	SetupRoutes(app, conn)
 
@@ -29,21 +36,19 @@ func Run(port int) {
 
 // Routes returns the initialized router
 func SetupRoutes(app *fiber.App, db *gorm.DB) {
-	h := &StudentHandler{
-		DB: db,
-	}
+	repo := &persistence.StudentRepository{Conn: db}
+	service := &services.StudentService{Repo: *repo}
+	h := &StudentHandler{services: *service}
 
 	app.Get("/", h.ListStudents)
 
 	app.Post("/fact", h.CreateStudent)
 
-	app.Get("/migrate", h.Migrate)
-
 	app.Get("/upload", h.Upload)
 }
 
 func (s *StudentHandler) ListStudents(c *fiber.Ctx) error {
-	facts, err := application.GetAllStudents(s.DB)
+	facts, err := s.services.GetAllStudents()
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": err.Error(),
@@ -61,7 +66,7 @@ func (s *StudentHandler) CreateStudent(c *fiber.Ctx) error {
 		})
 	}
 
-	err := application.AddStudent(s.DB, fact)
+	err := s.services.AddStudent(fact)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": err.Error(),
@@ -71,33 +76,78 @@ func (s *StudentHandler) CreateStudent(c *fiber.Ctx) error {
 	return c.Status(200).JSON(fact)
 }
 
-func (s *StudentHandler) Upload(ctx *fiber.Ctx) error {
-	id, err := strconv.ParseInt(ctx.Params("id"), 10, 64)
+func (s *StudentHandler) Upload(c *fiber.Ctx) error {
+	// Read the file from the request body
+	file, err := c.FormFile("file")
 	if err != nil {
-		return ctx.Status(422).JSON(fiber.Map{"errors": [1]string{"We were not able to process your expense"}})
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"message": "Error reading file from request body",
+		})
 	}
-	file, err := ctx.FormFile("attachment")
+	// Open the file and create a new reader
+	csvFile, err := file.Open()
 	if err != nil {
-		return ctx.Status(422).JSON(fiber.Map{"errors": [1]string{"We were not able upload your attachment"}})
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Error opening CSV file",
+		})
 	}
-	ctx.SaveFile(file, fmt.Sprintf("./uploads/%s", file.Filename))
-	var studentDB domain.Student
-	s.DB.First(&studentDB, id)
-	s.DB.Model(&studentDB).Update("attachment", file.Filename)
-	return ctx.JSON(fiber.Map{"message": "Attachment uploaded successfully"})
+	defer csvFile.Close()
+	reader := csv.NewReader(bufio.NewReader(csvFile))
+	// Read the CSV records one by one and create new student records
+	var students []domain.Student
+	for {
+		// Read the next record from the CSV file
+		record, err := reader.Read()
+		if err == io.EOF {
+			// Reached end of file
+			break
+		}
+		if err != nil {
+			// Error reading record
+			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Error reading CSV record",
+			})
+		}
+		// Parse the student data from the record
+		birthday, err := time.Parse("2006-01-02", record[1])
+		if err != nil {
+			// Error parsing date
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+				"message": "Invalid date format in CSV record",
+			})
+		}
+		student := domain.Student{
+			Name:     record[0],
+			Birthday: &birthday,
+			Class:    record[2],
+		}
+		// Add the new student to the list
+		students = append(students, student)
+	}
+	// Save the new student records to the database
+	for _, student := range students {
+		result := s.services.Repo.Create(&student)
+		if result.Error != nil {
+			// Error saving record to database
+			return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Error saving student record",
+			})
+		}
+	}
+	return c.Status(http.StatusCreated).JSON(fiber.Map{
+		"message": fmt.Sprintf("Created %d new student records", len(students)),
+	})
 }
 
 // =============================
 //    MIGRATE
 // =============================
 
-func (s *StudentHandler) Migrate(c *fiber.Ctx) error {
-	err := config.DBMigrate(s.DB)
+func Migrate(conn *gorm.DB) error {
+	err := config.DBMigrate(conn)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": err.Error(),
-		})
+		return err
 	}
 
-	return c.Status(200).Next()
+	return nil
 }
