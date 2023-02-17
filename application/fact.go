@@ -11,7 +11,7 @@ func GetAllStudents(conn *gorm.DB) ([]domain.Student, error) {
 	sqlDB, _ := conn.DB()
 	defer sqlDB.Close()
 
-	repo := persistence.NewNewsRepositoryWithRDB(conn)
+	repo := persistence.NewStudentRepositoryWithRDB(conn)
 
 	return repo.GetAll()
 }
@@ -21,6 +21,6 @@ func AddStudent(conn *gorm.DB, p domain.Student) error {
 	sqlDB, _ := conn.DB()
 	defer sqlDB.Close()
 
-	repo := persistence.NewNewsRepositoryWithRDB(conn)
+	repo := persistence.NewStudentRepositoryWithRDB(conn)
 	return repo.Create(&p)
 }

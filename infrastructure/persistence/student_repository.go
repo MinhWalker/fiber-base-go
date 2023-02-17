@@ -6,17 +6,17 @@ import (
 	"gorm.io/gorm"
 )
 
-// FactRepositoryImpl Implements repository.FactRepository
-type FactRepositoryImpl struct {
+// StudentRepositoryImpl Implements repository.StudentRepository
+type StudentRepositoryImpl struct {
 	Conn *gorm.DB
 }
 
-// NewNewsRepositoryWithRDB returns initialized NewsRepositoryImpl
-func NewNewsRepositoryWithRDB(conn *gorm.DB) repository.FactRepository {
-	return &FactRepositoryImpl{Conn: conn}
+// NewStudentRepositoryWithRDB returns initialized NewsRepositoryImpl
+func NewStudentRepositoryWithRDB(conn *gorm.DB) repository.StudentRepository {
+	return &StudentRepositoryImpl{Conn: conn}
 }
 
-func (f *FactRepositoryImpl) GetAll() ([]domain.Student, error) {
+func (f *StudentRepositoryImpl) GetAll() ([]domain.Student, error) {
 	facts := []domain.Student{}
 	if err := f.Conn.Find(&facts).Error; err != nil {
 		return nil, err
@@ -24,7 +24,7 @@ func (f *FactRepositoryImpl) GetAll() ([]domain.Student, error) {
 	return facts, nil
 }
 
-func (f *FactRepositoryImpl) Create(fact *domain.Student) error {
+func (f *StudentRepositoryImpl) Create(fact *domain.Student) error {
 	if err := f.Conn.Create(&fact).Error; err != nil {
 		return err
 	}
