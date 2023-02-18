@@ -1,8 +1,24 @@
-FROM golang:1.19.0
+FROM golang:1.19-alpine AS builder
+
+RUN apk add --no-cache git
 
 WORKDIR /usr/src/app
 
-RUN go install github.com/cosmtrek/air@latest
+COPY go.mod go.sum ./
+RUN go mod download
 
 COPY . .
-RUN go mod tidy
+
+RUN go build -o app ./cmd
+
+FROM alpine:3.14
+
+RUN apk add --no-cache ca-certificates
+
+WORKDIR /usr/src/app
+
+COPY --from=builder ./ .
+
+EXPOSE 3000
+
+CMD ["./app"]
