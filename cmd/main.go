@@ -34,9 +34,10 @@ func SetupRoutes(app *fiber.App, db *gorm.DB) {
 	service := &services.StudentService{Repo: repo}
 	h := interfaces.StudentHandler{Services: service}
 
-	app.Get("/", h.ListStudents)
+	v1 := app.Group("/api/v1")
+	v1.Get("/", h.ListStudents)
 
-	app.Post("/student", h.CreateStudent)
+	v1.Post("/student", h.CreateStudent)
 
-	app.Post("/upload", h.Upload)
+	v1.Post("/import", h.ImportStudent)
 }

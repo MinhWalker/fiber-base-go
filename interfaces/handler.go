@@ -46,7 +46,7 @@ func (s *StudentHandler) CreateStudent(c *fiber.Ctx) error {
 	return c.Status(200).JSON(student)
 }
 
-func (s *StudentHandler) Upload(c *fiber.Ctx) error {
+func (s *StudentHandler) ImportStudent(c *fiber.Ctx) error {
 	// Read the file from the request body
 	file, err := c.FormFile("file")
 	if err != nil {
