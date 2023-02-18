@@ -11,15 +11,36 @@ type StudentRepository struct {
 }
 
 func (f *StudentRepository) GetAll() ([]domain.Student, error) {
-	facts := []domain.Student{}
-	if err := f.Conn.Find(&facts).Error; err != nil {
+	students := []domain.Student{}
+	if err := f.Conn.Find(&students).Error; err != nil {
 		return nil, err
 	}
-	return facts, nil
+	return students, nil
 }
 
-func (f *StudentRepository) Create(fact *domain.Student) error {
-	if err := f.Conn.Create(&fact).Error; err != nil {
+func (f *StudentRepository) Create(student *domain.Student) error {
+	if err := f.Conn.Create(&student).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (f *StudentRepository) CreateMany(students []*domain.Student) error {
+	tx := f.Conn.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	for _, student := range students {
+		if err := tx.Create(student).Error; err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	if err := tx.Commit().Error; err != nil {
 		return err
 	}
 
