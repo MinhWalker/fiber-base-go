@@ -10,15 +10,14 @@ import (
 	"gorm.io/gorm/logger"
 )
 
-func ConnectDb() (*gorm.DB, error) {
-
+func ConnectDb(config *Config) (*gorm.DB, error) {
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable TimeZone=Asia/Shanghai",
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_NAME"),
-		os.Getenv("DB_PORT"),
+		config.Database.Host,
+		config.Database.Username,
+		config.Database.Password,
+		config.Database.Database,
+		config.Database.Port,
 	)
 
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
@@ -35,19 +34,3 @@ func ConnectDb() (*gorm.DB, error) {
 
 	return db, nil
 }
-
-//func (c *ConfigDB) LoadConfig(path string) error {
-//	viper.AddConfigPath(path)
-//	viper.SetConfigName("")
-//	viper.SetConfigType("env")
-//
-//	viper.AutomaticEnv()
-//
-//	err := viper.ReadInConfig()
-//	if err != nil {
-//		return err
-//	}
-//
-//	err = viper.Unmarshal(&config)
-//	return err
-//}

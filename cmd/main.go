@@ -2,12 +2,14 @@ package main
 
 import (
 	"fiber-base-go/config"
-	"fiber-base-go/infrastructure/persistence"
-	"fiber-base-go/interfaces"
-	"fiber-base-go/services"
+	"fiber-base-go/internal/delivery/api/handlers"
+	"fiber-base-go/internal/repository"
+	"fiber-base-go/internal/services"
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/gorm"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
@@ -16,28 +18,49 @@ func main() {
 
 // Run start server
 func Run(port int) {
+	// Load the configuration
+	cfg, err := config.LoadConfig("configs/dev.yaml")
+	if err != nil {
+		log.Fatalf("failed to load config: %s", err)
+	}
+
+	conn, err := config.ConnectDb(cfg)
+	if err != nil {
+		log.Fatalf("failed to connect database: %s", err)
+	}
+
+	// Automigrate the database schema
+	config.DBMigrate(conn)
+
+	// Create the repository
+	userRepo := repository.NewStudentRepository(conn)
+
+	// Create the service
+	userService := services.NewStudentService(userRepo)
+
+	// Create the Fiber app
 	app := fiber.New()
-	conn, _ := config.ConnectDb()
 
-	interfaces.Migrate(conn)
+	// Register the handler
+	studentHandler := handlers.NewStudentHandler(userService)
 
-	SetupRoutes(app, conn)
+	// Register the routes
+	studentHandler.RegisterRoutes(app)
 
-	log.Printf("Server running at http://localhost:%d/", port)
+	// Start the server
+	go func() {
+		if err := app.Listen(":3000"); err != nil {
+			log.Fatalf("failed to start server: %s", err)
+		}
+	}()
 
-	app.Listen(":3000")
-}
+	// Wait for a signal to gracefully shut down the server
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
+	<-sig
 
-// Routes returns the initialized router
-func SetupRoutes(app *fiber.App, db *gorm.DB) {
-	repo := &persistence.StudentRepository{Conn: db}
-	service := &services.StudentService{Repo: repo}
-	h := interfaces.StudentHandler{Services: service}
+	if err := app.Shutdown(); err != nil {
+		log.Printf("error shutting down server: %s", err)
+	}
 
-	v1 := app.Group("/api/v1")
-	v1.Get("/", h.ListStudents)
-
-	v1.Post("/student", h.CreateStudent)
-
-	v1.Post("/import", h.ImportStudent)
 }

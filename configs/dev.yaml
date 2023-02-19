@@ -1,0 +1,7 @@
+db:
+  driver: postgres
+  host: db
+  port: "5432"
+  username: minhnh
+  password: minhnh
+  database: testdb
