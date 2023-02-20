@@ -26,10 +26,11 @@ func NewStudentHandler(svc services.StudentService) *studentHandler {
 }
 
 func (h *studentHandler) RegisterRoutes(app *fiber.App) {
-	app.Get("/students/:id", h.getStudentByID)
-	app.Post("/students", h.createStudent)
-	app.Put("/students/:id", h.updateStudent)
-	app.Post("/students/import", h.importStudents)
+	api := app.Group("/api/v1") // Prefix API version
+	api.Post("/students", h.createStudent)
+	api.Get("/students/:id", h.getStudentByID)
+	api.Put("/students/:id", h.updateStudent)
+	api.Post("/students/import", h.importStudents)
 }
 
 func (h *studentHandler) importStudents(ctx *fiber.Ctx) error {

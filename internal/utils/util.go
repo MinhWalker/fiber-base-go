@@ -6,48 +6,57 @@ import (
 	"time"
 
 	"fiber-base-go/internal/model"
-
-	"github.com/pkg/errors"
 )
 
 func ParseCSV(r io.Reader, batchSize int) ([][]*model.Student, error) {
 	reader := csv.NewReader(r)
-	lines, err := reader.ReadAll()
+	rows, err := reader.ReadAll()
 	if err != nil {
-		return nil, errors.Wrap(err, "parseCSV")
+		return nil, err
 	}
 
-	// Split the lines into batches
-	batchCount := (len(lines) - 1) / batchSize
-	if (len(lines)-1)%batchSize > 0 {
-		batchCount++
-	}
-	batches := make([][]*model.Student, batchCount)
-	for i := 0; i < batchCount; i++ {
-		start := 1 + i*batchSize
-		end := start + batchSize
-		if end > len(lines) {
-			end = len(lines)
+	header := rows[0]
+	dataRows := rows[1:]
+
+	// Map the header names to their column indexes
+	var nameIndex, classIndex, birthdayIndex int
+	for i, col := range header {
+		switch col {
+		case "name":
+			nameIndex = i
+		case "class":
+			classIndex = i
+		case "birthday":
+			birthdayIndex = i
 		}
-		batch := make([]*model.Student, 0, end-start)
-		for j := start; j < end; j++ {
-			line := lines[j]
-			if len(line) != 3 {
-				return nil, errors.New("invalid number of fields in line")
-			}
-			birthday, err := time.Parse("2006-01-02", line[2])
-			if err != nil {
-				return nil, errors.Wrap(err, "parseCSV")
-			}
-			student := &model.Student{
-				Name:     line[0],
-				Class:    line[1],
-				Birthday: birthday,
-			}
-			batch = append(batch, student)
-		}
-		batches[i] = batch
 	}
 
-	return batches, nil
+	students := make([][]*model.Student, 0, len(dataRows)/batchSize+1)
+	batch := make([]*model.Student, 0, batchSize)
+
+	for _, row := range dataRows {
+		// Parse the birthday field into a time.Time value
+		birthday, err := time.Parse("2006-01-02", row[birthdayIndex])
+		if err != nil {
+			return nil, err
+		}
+
+		student := &model.Student{
+			Name:     row[nameIndex],
+			Class:    row[classIndex],
+			Birthday: birthday,
+		}
+
+		batch = append(batch, student)
+		if len(batch) >= batchSize {
+			students = append(students, batch)
+			batch = make([]*model.Student, 0, batchSize)
+		}
+	}
+
+	if len(batch) > 0 {
+		students = append(students, batch)
+	}
+
+	return students, nil
 }
