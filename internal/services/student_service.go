@@ -20,6 +20,8 @@ type studentService struct {
 	studentRepo repository.StudentRepository
 }
 
+var _ StudentService = (*studentService)(nil)
+
 func NewStudentService(studentRepo repository.StudentRepository) StudentService {
 	return &studentService{studentRepo}
 }

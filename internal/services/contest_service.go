@@ -14,6 +14,8 @@ type contestService struct {
 	contestRepo repository.ContestRepository
 }
 
+var _ ContestService = (*contestService)(nil)
+
 func NewContestService(contestRepo repository.ContestRepository) ContestService {
 	return &contestService{contestRepo}
 }

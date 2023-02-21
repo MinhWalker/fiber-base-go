@@ -14,6 +14,8 @@ type contestRepository struct {
 	db *gorm.DB
 }
 
+var _ ContestRepository = (*contestRepository)(nil)
+
 func NewContestRepository(db *gorm.DB) ContestRepository {
 	return &contestRepository{db}
 }

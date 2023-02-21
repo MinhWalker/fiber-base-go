@@ -23,6 +23,8 @@ type studentRepository struct {
 	db *gorm.DB
 }
 
+var _ StudentRepository = (*studentRepository)(nil)
+
 func NewStudentRepository(db *gorm.DB) StudentRepository {
 	return &studentRepository{db}
 }
