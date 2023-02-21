@@ -33,7 +33,7 @@ func (f *studentRepository) FindStudentByClass(class []string) ([]*model.Student
 	var students []*model.Student
 	result := f.db.Where("class IN (?)", class).Find(&students)
 	if result.Error != nil {
-		return nil, result.Error
+		return nil, errors.Wrap(result.Error, "studentRepository.FindStudentByClass")
 	}
 	return students, nil
 }
@@ -42,7 +42,7 @@ func (f *studentRepository) FindStudentByGrade(grades []string) ([]*model.Studen
 	var students []*model.Student
 	result := f.db.Where("SUBSTRING(class, 1, 2) IN (?)", grades).Find(&students)
 	if result.Error != nil {
-		return nil, result.Error
+		return nil, errors.Wrap(result.Error, "studentRepository.FindStudentByGrade")
 	}
 
 	return students, nil

@@ -32,20 +32,30 @@ func Run(port int) {
 	// Automigrate the database schema
 	config.DBMigrate(conn)
 
-	// Create the repository
-	userRepo := repository.NewStudentRepository(conn)
+	// Create the student repository
+	studentRepo := repository.NewStudentRepository(conn)
 
-	// Create the service
-	userService := services.NewStudentService(userRepo)
+	// Create the student service
+	studentService := services.NewStudentService(studentRepo)
+
+	// Create the contest repository
+	contestRepo := repository.NewContestRepository(conn)
+
+	// Create the contest service
+	contestService := services.NewContestService(contestRepo, studentRepo)
 
 	// Create the Fiber app
 	app := fiber.New()
 
-	// Register the handler
-	studentHandler := handlers.NewStudentHandler(userService)
+	// Register the student handler
+	studentHandler := handlers.NewStudentHandler(studentService)
 
-	// Register the routes
+	// Register the student handler
+	contestHandler := handlers.NewContestHandler(contestService)
+
+	// Register the student routes
 	studentHandler.RegisterRoutes(app)
+	contestHandler.RegisterRoutes(app)
 
 	// Start the server
 	go func() {
