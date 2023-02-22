@@ -16,5 +16,5 @@
 
 /tmp/*
 
-.env
-configs/dev.yaml
+#.env
+#configs/dev.yaml
