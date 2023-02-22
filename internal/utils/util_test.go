@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fiber-base-go/internal/model"
+	"fiber-base-go/internal/services"
 	"testing"
 	"time"
 )
@@ -32,7 +33,7 @@ func TestShuffleStudents(t *testing.T) {
 	}
 
 	// Shuffle the students
-	ShuffleStudents(students)
+	services.ShuffleStudents(students)
 
 	// Check that the students have been shuffled
 	if students[0].Name == "Alice" && students[1].Name == "Bob" && students[2].Name == "Charlie" && students[3].Name == "Dave" && students[4].Name == "Eve" {

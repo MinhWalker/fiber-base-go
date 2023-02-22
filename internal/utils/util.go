@@ -3,8 +3,6 @@ package utils
 import (
 	"encoding/csv"
 	"io"
-	"math/rand"
-	"sync"
 	"time"
 
 	"fiber-base-go/internal/model"
@@ -61,21 +59,4 @@ func ParseCSV(r io.Reader, batchSize int) ([][]*model.Student, error) {
 	}
 
 	return students, nil
-}
-
-// ShuffleStudents shuffles an array of students in parallel using goroutines.
-func ShuffleStudents(students []*model.Student) {
-	rand.Seed(time.Now().UnixNano())
-	n := len(students)
-	var wg sync.WaitGroup
-	wg.Add(n)
-
-	for i := 0; i < n; i++ {
-		go func(i int) {
-			defer wg.Done()
-			j := rand.Intn(n)
-			students[i], students[j] = students[j], students[i]
-		}(i)
-	}
-	wg.Wait()
 }
