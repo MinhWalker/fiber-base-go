@@ -19,7 +19,7 @@ func ParseCSV(r io.Reader, batchSize int) ([][]*model.Student, error) {
 	dataRows := rows[1:]
 
 	// Map the header names to their column indexes
-	var nameIndex, classIndex, birthdayIndex int
+	var nameIndex, classIndex, birthdayIndex, examGroupIndex int
 	for i, col := range header {
 		switch col {
 		case "name":
@@ -28,6 +28,8 @@ func ParseCSV(r io.Reader, batchSize int) ([][]*model.Student, error) {
 			classIndex = i
 		case "birthday":
 			birthdayIndex = i
+		case "examGroup":
+			examGroupIndex = i
 		}
 	}
 
@@ -42,9 +44,10 @@ func ParseCSV(r io.Reader, batchSize int) ([][]*model.Student, error) {
 		}
 
 		student := &model.Student{
-			Name:     row[nameIndex],
-			Class:    row[classIndex],
-			Birthday: birthday,
+			Name:      row[nameIndex],
+			Class:     row[classIndex],
+			Birthday:  birthday,
+			ExamGroup: row[examGroupIndex],
 		}
 
 		batch = append(batch, student)

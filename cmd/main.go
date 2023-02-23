@@ -44,6 +44,16 @@ func Run(port int) {
 	// Create the contest service
 	contestService := services.NewContestService(contestRepo, studentRepo)
 
+	roomRepo := repository.NewRoomRepository(conn)
+	roomService := services.NewRoomService(roomRepo)
+
+	go func() {
+		populateService := services.NewPopulateService(roomService)
+		if err := populateService.Populate(); err != nil {
+			log.Fatalf("failed to populate: %s", err)
+		}
+	}()
+
 	// Create the Fiber app
 	app := fiber.New()
 

@@ -6,7 +6,6 @@ import (
 
 type Contest struct {
 	gorm.Model
-	Name     string
-	semester string
+	Name     string     `json:"name"`
 	Students []*Student `gorm:"many2many:contest_students"`
 }

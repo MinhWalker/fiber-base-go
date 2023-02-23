@@ -1,4 +1,4 @@
-name,class,birthday
-John Doe,10th,1995-03-15
-Jane Smith,9th,1997-12-05
-Bob Johnson,11th,1998-06-30
+name,class,birthday,examGroup
+John Doe,10th,1995-03-15,A
+Jane Smith,9th,1997-12-05,A
+Bob Johnson,11th,1998-06-30,A
