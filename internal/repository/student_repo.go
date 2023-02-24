@@ -104,7 +104,7 @@ func (f *studentRepository) CreateMany(students []*model.Student) error {
 	}()
 
 	for _, student := range students {
-		if err := tx.Create(&student).Error; err != nil {
+		if err := tx.FirstOrCreate(&student, model.Student{Name: student.Name, Class: student.Class, Birthday: student.Birthday}).Error; err != nil {
 			tx.Rollback()
 			return errors.Wrap(err, "studentRepository.CreateMany")
 		}

@@ -48,7 +48,7 @@ func Run(port int) {
 	roomService := services.NewRoomService(roomRepo)
 
 	go func() {
-		populateService := services.NewPopulateService(roomService)
+		populateService := services.NewPopulateService(roomService, studentService)
 		if err := populateService.Populate(); err != nil {
 			log.Fatalf("failed to populate: %s", err)
 		}
