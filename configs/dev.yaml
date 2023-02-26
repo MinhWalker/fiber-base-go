@@ -5,3 +5,8 @@ db:
   username: minhnh
   password: minhnh
   database: testdb
+
+googleOAuth:
+  googleClientID: "17201075105-g4fhf6id0r0c7rqrdquhe9tsqmb2thq1.apps.googleusercontent.com"
+  googleClientSecret: "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"
+  googleRedirectUrl: "http://localhost:3000/api/v1/oauth/callback"

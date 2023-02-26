@@ -15,6 +15,11 @@ type Config struct {
 		Password string `yaml:"password"`
 		Database string `yaml:"database"`
 	} `yaml:"db"`
+	GoogleOAuth struct {
+		ClientID     string `yaml:"googleClientID"`
+		ClientSecret string `yaml:"googleClientSecret"`
+		RedirectURL  string `yaml:"googleRedirectUrl"`
+	} `yaml:"googleOAuth"`
 }
 
 func LoadConfig(filename string) (*Config, error) {

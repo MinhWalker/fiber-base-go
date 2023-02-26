@@ -29,6 +29,8 @@ func Run(port int) {
 		log.Fatalf("failed to connect database: %s", err)
 	}
 
+	oauthConfig := config.InitOAuthConfig(cfg)
+
 	// Automigrate the database schema
 	config.DBMigrate(conn)
 
@@ -47,6 +49,8 @@ func Run(port int) {
 	// Create the Fiber app
 	app := fiber.New()
 
+	// Register the handler
+	userHandler := handlers.NewUserHandler(oauthConfig)
 	// Register the student handler
 	studentHandler := handlers.NewStudentHandler(studentService)
 
@@ -55,6 +59,7 @@ func Run(port int) {
 
 	// Register the student routes
 	studentHandler.RegisterRoutes(app)
+	userHandler.RegisterRoutes(app)
 	contestHandler.RegisterRoutes(app)
 
 	// Start the server
