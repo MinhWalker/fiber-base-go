@@ -2,6 +2,7 @@ package repository
 
 import (
 	"fiber-base-go/internal/model"
+
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )

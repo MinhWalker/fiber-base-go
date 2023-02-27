@@ -1,15 +1,17 @@
 package main
 
 import (
-	"fiber-base-go/config"
-	"fiber-base-go/internal/delivery/api/handlers"
-	"fiber-base-go/internal/repository"
-	"fiber-base-go/internal/services"
-	"github.com/gofiber/fiber/v2"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"fiber-base-go/config"
+	"fiber-base-go/internal/delivery/api/handlers"
+	"fiber-base-go/internal/repository"
+	"fiber-base-go/internal/services"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 func main() {

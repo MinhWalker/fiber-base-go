@@ -3,12 +3,14 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"net/http"
+
 	"fiber-base-go/internal/model"
 	"fiber-base-go/internal/services"
-	"fmt"
+
 	"github.com/gofiber/fiber/v2"
 	"golang.org/x/oauth2"
-	"net/http"
 )
 
 var oauthStateString = "pseudo-random"

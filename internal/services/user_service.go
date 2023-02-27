@@ -3,6 +3,7 @@ package services
 import (
 	"fiber-base-go/internal/model"
 	"fiber-base-go/internal/repository"
+
 	"github.com/pkg/errors"
 )
 
