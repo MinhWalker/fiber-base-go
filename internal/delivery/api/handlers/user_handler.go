@@ -4,20 +4,24 @@ import (
 	"context"
 	"encoding/json"
 	"fiber-base-go/internal/model"
+	"fiber-base-go/internal/services"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"golang.org/x/oauth2"
+	"net/http"
 )
 
 var oauthStateString = "pseudo-random"
 
 type userHandler struct {
-	conf *oauth2.Config
+	conf        *oauth2.Config
+	userService services.UserService
 }
 
-func NewUserHandler(conf *oauth2.Config) *userHandler {
+func NewUserHandler(conf *oauth2.Config, userService services.UserService) *userHandler {
 	return &userHandler{
-		conf: conf,
+		conf:        conf,
+		userService: userService,
 	}
 }
 
@@ -33,19 +37,18 @@ func (h *userHandler) googleLogin(ctx *fiber.Ctx) error {
 }
 
 func (h *userHandler) callback(ctx *fiber.Ctx) error {
-	//content, err := h.getUserInfo(ctx.Query("state"), ctx.Query("code"))
-	//if err != nil {
-	//	return ctx.SendStatus(http.StatusInternalServerError)
-	//}
-	//
-	//var user model.User
-	//h.conf.Clauses(clause.OnConflict{
-	//	Columns:   []clause.Column{{Name: "email"}},
-	//	DoUpdates: clause.AssignmentColumns([]string{"updated_at"}),
-	//}).FirstOrCreate(&user, User{Email: content.Email})
-	//
-	//return ctx.JSON(user)
-	return nil
+	content, err := h.getUserInfo(ctx.Query("state"), ctx.Query("code"))
+	if err != nil {
+		return ctx.SendStatus(http.StatusInternalServerError)
+	}
+
+	var user *model.User
+	user, err = h.userService.UpsertUser(content)
+	if err != nil {
+		return ctx.SendStatus(http.StatusInternalServerError)
+	}
+
+	return ctx.JSON(user)
 }
 
 func (h *userHandler) getUserInfo(state string, code string) (*model.User, error) {
