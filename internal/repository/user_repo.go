@@ -2,13 +2,13 @@ package repository
 
 import (
 	"fiber-base-go/internal/model"
-
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
 type UserRepository interface {
 	UpsertUser(userReq *model.User) (*model.User, error)
+	GetUserByEmail(email string) (*model.User, error)
 }
 
 type userRepository struct {
@@ -28,6 +28,16 @@ func (f *userRepository) UpsertUser(userReq *model.User) (*model.User, error) {
 
 	if err != nil {
 		return nil, err.Error
+	}
+
+	return user, nil
+}
+
+func (f *userRepository) GetUserByEmail(email string) (*model.User, error) {
+	var user *model.User
+	// Look up the user in the database by email address.
+	if err := f.db.Where("email = ?", email).First(&user).Error; err != nil {
+		return nil, err
 	}
 
 	return user, nil

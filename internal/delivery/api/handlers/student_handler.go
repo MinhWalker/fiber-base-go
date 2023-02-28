@@ -25,8 +25,7 @@ func NewStudentHandler(svc services.StudentService) *studentHandler {
 	}
 }
 
-func (h *studentHandler) RegisterRoutes(app *fiber.App) {
-	api := app.Group("/api/v1") // Prefix API version
+func (h *studentHandler) RegisterRoutes(api fiber.Router) {
 	api.Post("/students", h.createStudent)
 	api.Get("/students/:id", h.getStudentByID)
 	api.Put("/students/:id", h.updateStudent)

@@ -3,8 +3,11 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fiber-base-go/config"
+	"fiber-base-go/internal/utils"
 	"fmt"
 	"net/http"
+	"time"
 
 	"fiber-base-go/internal/model"
 	"fiber-base-go/internal/services"
@@ -17,18 +20,19 @@ var oauthStateString = "pseudo-random"
 
 type userHandler struct {
 	conf        *oauth2.Config
+	config      *config.Config
 	userService services.UserService
 }
 
-func NewUserHandler(conf *oauth2.Config, userService services.UserService) *userHandler {
+func NewUserHandler(conf *oauth2.Config, config *config.Config, userService services.UserService) *userHandler {
 	return &userHandler{
 		conf:        conf,
+		config:      config,
 		userService: userService,
 	}
 }
 
-func (h *userHandler) RegisterRoutes(app *fiber.App) {
-	api := app.Group("/api/v1") // Prefix API version
+func (h *userHandler) RegisterRoutes(api fiber.Router) {
 	api.Get("/oauth", h.googleLogin)
 	api.Get("/oauth/callback", h.callback)
 }
@@ -50,7 +54,16 @@ func (h *userHandler) callback(ctx *fiber.Ctx) error {
 		return ctx.SendStatus(http.StatusInternalServerError)
 	}
 
-	return ctx.JSON(user)
+	// Generate a JWT token for the user ID.
+	tokenString, err := utils.GenerateToken(user.Email, h.config.GoogleOAuth.ClientSecret, time.Hour*1000)
+	if err != nil {
+		return ctx.SendStatus(http.StatusInternalServerError)
+	}
+
+	return ctx.JSON(fiber.Map{
+		"token":    tokenString,
+		"userInfo": user,
+	})
 }
 
 func (h *userHandler) getUserInfo(state string, code string) (*model.User, error) {

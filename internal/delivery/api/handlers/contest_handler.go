@@ -18,12 +18,10 @@ func NewContestHandler(svc services.ContestService) *contestHandler {
 	}
 }
 
-func (h *contestHandler) RegisterRoutes(app *fiber.App) {
-	api := app.Group("/api/v1") // Prefix API version
+func (h *contestHandler) RegisterRoutes(api fiber.Router) {
 	api.Post("/contests", h.CreateContest)
 }
 
-// POST /contests
 func (h *contestHandler) CreateContest(c *fiber.Ctx) error {
 	// Parse request body
 	req := new(request.CreateContestRequest)

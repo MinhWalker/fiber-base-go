@@ -9,6 +9,7 @@ import (
 
 type UserService interface {
 	UpsertUser(user *model.User) (*model.User, error)
+	GetUserByEmail(email string) (*model.User, error)
 }
 
 type userService struct {
@@ -23,6 +24,16 @@ func (s *userService) UpsertUser(user *model.User) (*model.User, error) {
 	var userDB *model.User
 	var err error
 	if userDB, err = s.userRepo.UpsertUser(user); err != nil {
+		return nil, errors.Wrap(err, "studentService.CreateStudent")
+	}
+
+	return userDB, nil
+}
+
+func (s *userService) GetUserByEmail(email string) (*model.User, error) {
+	var userDB *model.User
+	var err error
+	if userDB, err = s.userRepo.GetUserByEmail(email); err != nil {
 		return nil, errors.Wrap(err, "studentService.CreateStudent")
 	}
 

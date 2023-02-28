@@ -8,6 +8,7 @@ import (
 
 	"fiber-base-go/config"
 	"fiber-base-go/internal/delivery/api/handlers"
+	middleware2 "fiber-base-go/internal/delivery/api/middleware"
 	"fiber-base-go/internal/repository"
 	"fiber-base-go/internal/services"
 
@@ -54,15 +55,18 @@ func Run(port int) {
 
 	// Register the student handler
 	studentHandler := handlers.NewStudentHandler(studentService)
-	userHandler := handlers.NewUserHandler(oauthConfig, userService)
+	userHandler := handlers.NewUserHandler(oauthConfig, cfg, userService)
+	middlewareHandler := middleware2.NewMiddlewareHandler(cfg, userService)
 
 	// Register the student handler
 	contestHandler := handlers.NewContestHandler(contestService)
 
 	// Register the student routes
-	studentHandler.RegisterRoutes(app)
-	userHandler.RegisterRoutes(app)
-	contestHandler.RegisterRoutes(app)
+	// Prefix API version
+	api := app.Group("/api/v1", middlewareHandler.RequireAuth())
+	studentHandler.RegisterRoutes(api)
+	userHandler.RegisterRoutes(api)
+	contestHandler.RegisterRoutes(api)
 
 	// Start the server
 	go func() {
