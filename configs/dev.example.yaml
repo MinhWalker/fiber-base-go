@@ -5,3 +5,8 @@ db:
   username: minhnh
   password: minhnh
   database: testdb
+
+googleOAuth:
+  googleclientid: "example.apps.googleusercontent.com"
+  googleclientsecret: "example"
+  gooleredirecturl: "http://localhost:3000/api/v1/oauth/callback"

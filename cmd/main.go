@@ -1,15 +1,18 @@
 package main
 
 import (
-	"fiber-base-go/config"
-	"fiber-base-go/internal/delivery/api/handlers"
-	"fiber-base-go/internal/repository"
-	"fiber-base-go/internal/services"
-	"github.com/gofiber/fiber/v2"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"fiber-base-go/config"
+	"fiber-base-go/internal/delivery/api/handlers"
+	middleware2 "fiber-base-go/internal/delivery/api/middleware"
+	"fiber-base-go/internal/repository"
+	"fiber-base-go/internal/services"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 func main() {
@@ -29,15 +32,18 @@ func Run(port int) {
 		log.Fatalf("failed to connect database: %s", err)
 	}
 
+	oauthConfig := config.InitOAuthConfig(cfg)
+
 	// Automigrate the database schema
 	config.DBMigrate(conn)
 
-	// Create the student repository
+	// Create the repository
 	studentRepo := repository.NewStudentRepository(conn)
+	userRepo := repository.NewUserRepository(conn)
 
-	// Create the student service
+	// Create the service
 	studentService := services.NewStudentService(studentRepo)
-
+	userService := services.NewUserService(userRepo)
 	// Create the contest repository
 	contestRepo := repository.NewContestRepository(conn)
 
@@ -49,13 +55,18 @@ func Run(port int) {
 
 	// Register the student handler
 	studentHandler := handlers.NewStudentHandler(studentService)
+	userHandler := handlers.NewUserHandler(oauthConfig, cfg, userService)
+	middlewareHandler := middleware2.NewMiddlewareHandler(cfg, userService)
 
 	// Register the student handler
 	contestHandler := handlers.NewContestHandler(contestService)
 
 	// Register the student routes
-	studentHandler.RegisterRoutes(app)
-	contestHandler.RegisterRoutes(app)
+	// Prefix API version
+	api := app.Group("/api/v1", middlewareHandler.RequireAuth())
+	studentHandler.RegisterRoutes(api)
+	userHandler.RegisterRoutes(api)
+	contestHandler.RegisterRoutes(api)
 
 	// Start the server
 	go func() {
